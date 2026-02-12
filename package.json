@@ -1,0 +1,19 @@
+{
+  "name": "atmospinn-lab",
+  "version": "1.0.0",
+  "description": "Presentation-ready web UI for a physics-informed neural network (PINN) project using model rockets as atmospheric probes.",
+  "private": true,
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": [
+    "pinn",
+    "rocketry",
+    "atmospheric-inference",
+    "physics-informed-ai",
+    "demo"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+

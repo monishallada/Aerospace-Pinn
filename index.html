@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AtmosPINN Lab | Physics‑Informed AI for Rocket Atmospheres</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Interactive demo of physics‑informed neural networks (PINNs) for reconstructing atmospheric profiles from model rocket flights."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root {
+        --bg: #030712;
+        --bg-elevated: #020617;
+        --bg-card: #020617;
+        --fg: #e5e7eb;
+        --fg-muted: #9ca3af;
+        --accent: #22d3ee;
+        --accent-soft: rgba(34, 211, 238, 0.12);
+        --accent-strong: rgba(34, 211, 238, 0.32);
+        --danger: #f97373;
+        --border-subtle: rgba(148, 163, 184, 0.26);
+        --radius-xl: 24px;
+        --radius-lg: 16px;
+        --radius-md: 12px;
+        --shadow-soft: 0 22px 60px rgba(15, 23, 42, 0.85);
+        --shadow-chip: 0 10px 30px rgba(15, 23, 42, 0.95);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont,
+          "SF Pro Text", sans-serif;
+        background: radial-gradient(circle at top left, #0f172a 0, #020617 45%, #000 100%);
+        color: var(--fg);
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px 20px 60px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 32px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .brand-mark {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: radial-gradient(circle at 20% 0%, #38bdf8, #0ea5e9 40%, #22c55e 100%);
+        box-shadow: 0 0 40px rgba(56, 189, 248, 0.7);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .brand-mark::after {
+        content: "";
+        position: absolute;
+        inset: 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.75);
+        border-top-color: transparent;
+        border-right-color: transparent;
+        transform: rotate(-25deg);
+      }
+
+      .brand-title {
+        font-size: 19px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #e5e7eb;
+      }
+
+      .brand-subtitle {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.25em;
+        color: var(--fg-muted);
+      }
+
+      .tagline-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        backdrop-filter: blur(18px);
+        box-shadow: var(--shadow-chip);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--fg-muted);
+      }
+
+      .tagline-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #22d3ee;
+        box-shadow: 0 0 12px rgba(34, 211, 238, 0.9);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+        gap: 32px;
+        align-items: stretch;
+        margin-bottom: 36px;
+      }
+
+      @media (max-width: 880px) {
+        .hero {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+
+      .hero-main {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .hero-title {
+        font-size: clamp(32px, 4vw, 40px);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        line-height: 1.1;
+      }
+
+      .hero-title span.highlight {
+        background: linear-gradient(120deg, #22d3ee, #38bdf8, #a855f7);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .hero-kicker {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.26em;
+        color: var(--fg-muted);
+      }
+
+      .hero-body {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #d1d5db;
+        max-width: 600px;
+      }
+
+      .hero-body strong {
+        color: #e5e7eb;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 4px;
+        align-items: center;
+      }
+
+      .btn-primary {
+        border: none;
+        cursor: pointer;
+        padding: 11px 18px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        background: radial-gradient(circle at 20% 0%, #22d3ee, #0ea5e9 46%, #6366f1 100%);
+        color: #0b1120;
+        box-shadow: 0 18px 45px rgba(56, 189, 248, 0.5);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 26px 60px rgba(56, 189, 248, 0.7);
+        filter: brightness(1.05);
+      }
+
+      .btn-secondary {
+        cursor: pointer;
+        padding: 11px 16px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        color: var(--fg-muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        backdrop-filter: blur(18px);
+        transition: border-color 0.16s ease, color 0.16s ease, background 0.16s ease,
+          transform 0.14s ease;
+      }
+
+      .btn-secondary:hover {
+        border-color: rgba(148, 163, 184, 0.9);
+        color: #e5e7eb;
+        transform: translateY(-1px);
+      }
+
+      .btn-icon {
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        border: 1px solid rgba(15, 23, 42, 0.85);
+        background: rgba(15, 23, 42, 0.95);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+      }
+
+      .hero-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 6px;
+      }
+
+      .pill {
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        color: var(--fg-muted);
+        background: rgba(15, 23, 42, 0.8);
+      }
+
+      .pill strong {
+        color: #e5e7eb;
+        font-weight: 500;
+      }
+
+      .hero-panel {
+        border-radius: var(--radius-xl);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: radial-gradient(circle at top left, rgba(34, 211, 238, 0.08), transparent),
+          radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.16), #020617);
+        box-shadow: var(--shadow-soft);
+        padding: 18px 18px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero-panel::before {
+        content: "";
+        position: absolute;
+        inset: -60%;
+        background: conic-gradient(
+          from 180deg,
+          rgba(56, 189, 248, 0.14),
+          transparent,
+          transparent,
+          rgba(56, 189, 248, 0.14),
+          transparent
+        );
+        opacity: 0.2;
+        filter: blur(32px);
+      }
+
+      .hero-panel-inner {
+        position: relative;
+        z-index: 1;
+      }
+
+      .hero-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .hero-panel-title {
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: var(--fg-muted);
+      }
+
+      .hero-badge {
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .hero-badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #22c55e;
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
+      }
+
+      .hero-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .metric-card {
+        padding: 9px 10px;
+        border-radius: var(--radius-md);
+        background: rgba(15, 23, 42, 0.92);
+        border: 1px solid rgba(31, 41, 55, 0.9);
+      }
+
+      .metric-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--fg-muted);
+        margin-bottom: 3px;
+      }
+
+      .metric-value {
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .metric-sub {
+        font-size: 10px;
+        color: var(--fg-muted);
+        margin-top: 2px;
+      }
+
+      .hero-strip {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed rgba(148, 163, 184, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .hero-strip-text {
+        font-size: 11px;
+        color: var(--fg-muted);
+        max-width: 260px;
+      }
+
+      .hero-strip-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .chip {
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        color: var(--fg-muted);
+      }
+
+      .content-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+        gap: 24px;
+        align-items: flex-start;
+      }
+
+      @media (max-width: 960px) {
+        .content-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .card {
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-subtle);
+        background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.95), #020617);
+        padding: 18px 18px 16px;
+        box-shadow: 0 14px 45px rgba(15, 23, 42, 0.85);
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .card-title {
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: var(--fg-muted);
+      }
+
+      .card-title-main {
+        font-size: 17px;
+        font-weight: 500;
+        color: #e5e7eb;
+        letter-spacing: 0.02em;
+        margin-top: 4px;
+      }
+
+      .badge-soft {
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        background: var(--accent-soft);
+        border: 1px solid rgba(34, 211, 238, 0.5);
+        color: #a5f3fc;
+      }
+
+      .card-body {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--fg-muted);
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .pill-soft {
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        border: 1px solid rgba(148, 163, 184, 0.4);
+        background: rgba(15, 23, 42, 0.9);
+        color: var(--fg-muted);
+      }
+
+      .pill-soft strong {
+        color: #e5e7eb;
+        font-weight: 500;
+      }
+
+      .pill-keyword {
+        border-color: rgba(34, 211, 238, 0.7);
+        background: var(--accent-soft);
+        color: #e0f2fe;
+      }
+
+      .section-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.22em;
+        color: var(--fg-muted);
+        margin-bottom: 4px;
+      }
+
+      .section-heading {
+        font-size: 16px;
+        font-weight: 500;
+        margin-bottom: 10px;
+      }
+
+      .section-heading span {
+        color: #a5f3fc;
+      }
+
+      .bullets {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .bullets li {
+        position: relative;
+        padding-left: 14px;
+        margin-bottom: 6px;
+        font-size: 13px;
+      }
+
+      .bullets li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 7px;
+        width: 4px;
+        height: 4px;
+        border-radius: 999px;
+        background: #22d3ee;
+      }
+
+      .bullets strong {
+        color: #e5e7eb;
+        font-weight: 500;
+      }
+
+      .two-column-bullets {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 18px;
+      }
+
+      @media (max-width: 720px) {
+        .two-column-bullets {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .demo-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+        gap: 16px;
+        margin-top: 6px;
+      }
+
+      @media (max-width: 880px) {
+        .demo-layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .form-side {
+        border-radius: 18px;
+        padding: 14px 14px 12px;
+        background: radial-gradient(circle at top left, rgba(15, 23, 42, 1), #020617);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+      }
+
+      .chart-side {
+        border-radius: 18px;
+        padding: 14px;
+        background: radial-gradient(circle at bottom right, rgba(15, 23, 42, 1), #020617);
+        border: 1px solid rgba(148, 163, 184, 0.35);
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      @media (max-width: 600px) {
+        .form-row {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .field-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--fg-muted);
+      }
+
+      .field-label span {
+        color: #64748b;
+      }
+
+      .input,
+      select {
+        padding: 8px 9px;
+        border-radius: 999px;
+        border: 1px solid rgba(51, 65, 85, 0.9);
+        background: rgba(15, 23, 42, 0.96);
+        color: var(--fg);
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+      }
+
+      .input::placeholder {
+        color: #4b5563;
+      }
+
+      .input:focus,
+      select:focus {
+        border-color: rgba(34, 211, 238, 0.9);
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.4);
+        background: rgba(15, 23, 42, 1);
+      }
+
+      select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: linear-gradient(45deg, transparent 50%, #64748b 50%),
+          linear-gradient(135deg, #64748b 50%, transparent 50%);
+        background-position: calc(100% - 16px) 13px, calc(100% - 11px) 13px;
+        background-size: 6px 6px, 6px 6px;
+        background-repeat: no-repeat;
+        padding-right: 32px;
+      }
+
+      .subcaption {
+        font-size: 10px;
+        color: var(--fg-muted);
+      }
+
+      .preset-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin: 4px 2px 10px;
+      }
+
+      .preset-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .preset-btn {
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        background: rgba(15, 23, 42, 0.9);
+        color: var(--fg-muted);
+        font-size: 11px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .preset-btn span.dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #38bdf8;
+      }
+
+      .preset-btn:hover {
+        border-color: rgba(148, 163, 184, 0.9);
+        color: #e5e7eb;
+      }
+
+      .preset-label {
+        font-size: 11px;
+        color: var(--fg-muted);
+      }
+
+      .demo-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+      }
+
+      .demo-actions-left {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .btn-pill {
+        cursor: pointer;
+        padding: 7px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        background: rgba(15, 23, 42, 0.96);
+        color: var(--fg-muted);
+        font-size: 11px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+      }
+
+      .btn-pill.primary {
+        border-color: rgba(34, 211, 238, 0.9);
+        color: #e0f2fe;
+        background: linear-gradient(120deg, rgba(34, 211, 238, 0.18), rgba(15, 23, 42, 0.96));
+      }
+
+      .btn-pill:hover {
+        border-color: rgba(148, 163, 184, 1);
+      }
+
+      .demo-status {
+        font-size: 11px;
+        color: var(--fg-muted);
+        text-align: right;
+      }
+
+      .demo-status span {
+        color: #a5f3fc;
+      }
+
+      .chart-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+
+      .chart-title {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--fg-muted);
+      }
+
+      .chart-tags {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .chart-tag {
+        font-size: 10px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        color: var(--fg-muted);
+      }
+
+      .chart-canvas {
+        position: relative;
+        height: 230px;
+      }
+
+      .chart-footnote {
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--fg-muted);
+      }
+
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 8px;
+      }
+
+      .stat-card {
+        padding: 8px 10px;
+        border-radius: 14px;
+        border: 1px dashed rgba(148, 163, 184, 0.7);
+        background: rgba(15, 23, 42, 0.95);
+      }
+
+      .stat-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--fg-muted);
+        margin-bottom: 2px;
+      }
+
+      .stat-value {
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .stat-delta {
+        font-size: 11px;
+        color: #22c55e;
+        margin-top: 2px;
+      }
+
+      .stat-delta.bad {
+        color: #f97373;
+      }
+
+      footer {
+        margin-top: 42px;
+        font-size: 11px;
+        color: var(--fg-muted);
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      footer span {
+        opacity: 0.9;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div class="brand">
+          <div class="brand-mark"></div>
+          <div>
+            <div class="brand-title">AtmosPINN Lab</div>
+            <div class="brand-subtitle">Physics‑informed Atmospheric Inference</div>
+          </div>
+        </div>
+        <span class="tagline-chip">
+          <span class="tagline-dot"></span>
+          Model rockets as atmospheric sensors
+        </span>
+      </header>
+
+      <section class="hero">
+        <div class="hero-main">
+          <div class="hero-kicker">Project · Physics‑Informed AI for Rocket Flight</div>
+          <h1 class="hero-title">
+            Physics‑informed AI for
+            <span class="highlight">atmospheric inference</span> and smarter rocket decisions.
+          </h1>
+          <p class="hero-body">
+            This project turns
+            <strong>model rocket flights into atmospheric experiments</strong>. A
+            physics‑informed neural network (PINN) uses
+            <strong>telemetry + Newton’s laws</strong> to reconstruct vertical profiles of wind and
+            density, closing the gap between simplified simulations and reality and
+            <strong>shrinking apogee prediction error</strong>.
+          </p>
+
+          <div class="hero-actions">
+            <button class="btn-primary" onclick="scrollToDemo()">
+              <span class="btn-icon">▲</span>
+              Run Atmospheric Inference Demo
+            </button>
+            <button class="btn-secondary" onclick="scrollToSummary()">
+              <span class="btn-icon">?</span>
+              View Project Summary
+            </button>
+          </div>
+
+          <div class="hero-pills">
+            <div class="pill"><strong>Input</strong>: Rocket telemetry + parameters</div>
+            <div class="pill">
+              <strong>Engine</strong>: Physics‑Informed Neural Network (PINN)
+            </div>
+            <div class="pill"><strong>Output</strong>: Inferred atmosphere + better predictions</div>
+          </div>
+        </div>
+
+        <aside class="hero-panel">
+          <div class="hero-panel-inner">
+            <div class="hero-panel-header">
+              <div>
+                <div class="hero-panel-title">Live Mission View</div>
+                <div class="hero-strip-text" style="margin-top: 4px; max-width: none">
+                  Mocked example of how the PINN corrects a baseline simulation using flight data.
+                </div>
+              </div>
+              <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                PINN constraint: F = m·a
+              </div>
+            </div>
+
+            <div class="hero-metrics">
+              <div class="metric-card">
+                <div class="metric-label">Apogee</div>
+                <div class="metric-value" id="heroApogee">362 m</div>
+                <div class="metric-sub">Predicted vs. actual</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Error Reduction</div>
+                <div class="metric-value" id="heroError">↓ 37%</div>
+                <div class="metric-sub">PINN vs. physics‑only</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Wind Shear</div>
+                <div class="metric-value" id="heroShear">9.4 m/s</div>
+                <div class="metric-sub">Peak at ~280 m</div>
+              </div>
+            </div>
+
+            <div class="hero-strip">
+              <div class="hero-strip-text">
+                The network adjusts drag and effective wind with altitude until
+                <strong>telemetry and equations of motion agree</strong>.
+              </div>
+              <div class="hero-strip-pills">
+                <span class="chip">Telemetry‑constrained</span>
+                <span class="chip">Vertical atmosphere reconstruction</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section id="summary" style="margin-bottom: 26px">
+        <div class="content-grid">
+          <article class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Executive Overview</div>
+                <div class="card-title-main">What this project is about</div>
+              </div>
+              <span class="badge-soft">Pitch‑ready summary</span>
+            </div>
+            <div class="card-body">
+              <p>
+                Traditional rocket simulations assume a “nice” atmosphere and then push a design
+                through it. In reality, <strong>wind shear and density gradients</strong> change
+                with altitude and are rarely measured directly, so predictions drift from what
+                rockets actually do.
+              </p>
+              <p>
+                This project uses <strong>physics‑informed neural networks</strong> to work
+                backwards from <strong>flight data</strong>—altitude, acceleration, attitude, and
+                motor data—to <strong>reconstruct the atmosphere itself</strong>. Instead of
+                treating the atmosphere as a fixed input, it becomes an
+                <strong>unknown state inferred by the model</strong>. The result is tighter apogee
+                predictions and more informed design and launch decisions under real‑world
+                uncertainty.
+              </p>
+              <div class="pill-row">
+                <span class="pill-soft pill-keyword">Model rockets as atmospheric probes</span>
+                <span class="pill-soft">Governing laws: Newton + drag + stability</span>
+                <span class="pill-soft">Output: altitude‑dependent wind &amp; density</span>
+              </div>
+            </div>
+          </article>
+
+          <aside class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Talk Track</div>
+                <div class="card-title-main">How to present it</div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="section-label">In 4 beats</div>
+              <ol class="bullets" style="margin-bottom: 10px">
+                <li>
+                  <strong>Problem</strong> – Simulators assume simple atmospheres; real flights see
+                  messy winds and density, so predictions are off.
+                </li>
+                <li>
+                  <strong>Idea</strong> – Treat each rocket flight as an
+                  <em>atmospheric experiment</em> and use a physics‑informed neural network to
+                  infer what the atmosphere had to be.
+                </li>
+                <li>
+                  <strong>Method</strong> – Feed in telemetry and rocket parameters, enforce
+                  Newton’s laws and drag physics inside the loss function, and solve for
+                  altitude‑dependent wind/density that make the trajectory consistent.
+                </li>
+                <li>
+                  <strong>Result</strong> – Reconstructed atmospheric profiles and
+                  <strong>smaller apogee prediction error</strong> than physics‑only baselines.
+                </li>
+              </ol>
+              <div class="section-label">Slide suggestions</div>
+              <div class="two-column-bullets">
+                <ul class="bullets">
+                  <li><strong>Slide 1</strong> – Title + one‑sentence problem.</li>
+                  <li>
+                    <strong>Slide 2</strong> – “Forward simulation” vs “inverse inference” diagram.
+                  </li>
+                  <li>
+                    <strong>Slide 3</strong> – PINN diagram: inputs, physics constraints, outputs.
+                  </li>
+                </ul>
+                <ul class="bullets">
+                  <li>
+                    <strong>Slide 4</strong> – Plot: predicted vs actual apogee, error bars.
+                  </li>
+                  <li>
+                    <strong>Slide 5</strong> – Demo this web UI as “AtmosPINN Lab” for model
+                    rockets.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section id="demo">
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Interactive Demo</div>
+              <div class="card-title-main">
+                Explore inferred atmosphere from model rocket flights
+              </div>
+            </div>
+            <span class="badge-soft">Demo this live on Saturday</span>
+          </div>
+
+          <div class="card-body">
+            <p style="margin-bottom: 10px">
+              Use this panel as your “product”:
+              <strong>enter rocket and flight data</strong>, and the interface generates a
+              <strong>mocked atmospheric profile and apogee prediction comparison</strong> that
+              behaves like the real PINN would.
+            </p>
+
+            <div class="demo-layout">
+              <div class="form-side">
+                <div class="section-label">1 · Flight &amp; Rocket Inputs</div>
+                <div class="form-row">
+                  <div class="field">
+                    <label class="field-label" for="rocketMass">
+                      Rocket mass <span>(kg)</span>
+                    </label>
+                    <input
+                      id="rocketMass"
+                      type="number"
+                      class="input"
+                      placeholder="e.g. 0.45"
+                      step="0.01"
+                    />
+                    <span class="subcaption">Dry mass + onboard electronics</span>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="motorClass">
+                      Motor class
+                    </label>
+                    <select id="motorClass">
+                      <option value="A">A · 2–4.9 Ns</option>
+                      <option value="B">B · 5–9.9 Ns</option>
+                      <option value="C" selected>C · 10–19.9 Ns</option>
+                      <option value="D">D · 20–39.9 Ns</option>
+                      <option value="E">E · 40–79.9 Ns</option>
+                    </select>
+                    <span class="subcaption">Approximate impulse band</span>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="field">
+                    <label class="field-label" for="peakAlt">
+                      Observed apogee <span>(m)</span>
+                    </label>
+                    <input
+                      id="peakAlt"
+                      type="number"
+                      class="input"
+                      placeholder="e.g. 360"
+                      step="1"
+                    />
+                    <span class="subcaption">From barometric altimeter</span>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="maxAccel">
+                      Peak acceleration <span>(g)</span>
+                    </label>
+                    <input
+                      id="maxAccel"
+                      type="number"
+                      class="input"
+                      placeholder="e.g. 14"
+                      step="0.1"
+                    />
+                    <span class="subcaption">From IMU during boost</span>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="field">
+                    <label class="field-label" for="windGround">
+                      Ground wind estimate <span>(m/s)</span>
+                    </label>
+                    <input
+                      id="windGround"
+                      type="number"
+                      class="input"
+                      placeholder="e.g. 3"
+                      step="0.1"
+                    />
+                    <span class="subcaption">From launch‑site conditions</span>
+                  </div>
+                  <div class="field">
+                    <label class="field-label" for="stabilityCal">
+                      Static margin <span>(calibers)</span>
+                    </label>
+                    <input
+                      id="stabilityCal"
+                      type="number"
+                      class="input"
+                      placeholder="e.g. 1.5"
+                      step="0.1"
+                    />
+                    <span class="subcaption">CP–CG separation / body diameter</span>
+                  </div>
+                </div>
+
+                <div class="preset-bar">
+                  <div class="preset-group">
+                    <button class="preset-btn" onclick="loadPreset('low')">
+                      <span class="dot"></span>
+                      Low‑power calm day
+                    </button>
+                    <button class="preset-btn" onclick="loadPreset('windy')">
+                      <span class="dot" style="background: #f97373"></span>
+                      Windy day shear
+                    </button>
+                    <button class="preset-btn" onclick="loadPreset('aggressive')">
+                      <span class="dot" style="background: #a855f7"></span>
+                      High‑energy flight
+                    </button>
+                  </div>
+                  <span class="preset-label">Or paste numbers from your logbook.</span>
+                </div>
+
+                <div class="demo-actions">
+                  <div class="demo-actions-left">
+                    <button class="btn-pill primary" onclick="runInference()">
+                      <span>▶</span>
+                      Run PINN‑style inference
+                    </button>
+                    <button class="btn-pill" onclick="resetInputs()">
+                      <span>⟲</span>
+                      Reset
+                    </button>
+                  </div>
+                  <div class="demo-status" id="demoStatus">
+                    Ready. <span>Use a preset or enter your own flight.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="chart-side">
+                <div class="chart-heading">
+                  <div>
+                    <div class="chart-title">2 · Inferred vertical atmosphere</div>
+                    <div class="subcaption">
+                      Mocked PINN output: altitude‑dependent density and cross‑wind.
+                    </div>
+                  </div>
+                  <div class="chart-tags">
+                    <span class="chart-tag">Density vs. altitude</span>
+                    <span class="chart-tag">Wind vs. altitude</span>
+                  </div>
+                </div>
+                <div class="chart-canvas">
+                  <canvas id="atmosChart"></canvas>
+                </div>
+                <p class="chart-footnote">
+                  The real model would
+                  <strong>optimize these profiles</strong> so that simulated flight and measured
+                  telemetry agree, subject to Newton’s laws and drag physics. Here we generate a
+                  <em>qualitatively realistic</em> profile for presentation purposes.
+                </p>
+                <div class="stats-row">
+                  <div class="stat-card">
+                    <div class="stat-label">Apogee (physics‑only)</div>
+                    <div class="stat-value" id="statBaselineApogee">340 m</div>
+                    <div class="stat-delta bad" id="statBaselineError">−22 m vs. observed</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-label">Apogee (PINN‑enhanced)</div>
+                    <div class="stat-value" id="statPinnApogee">358 m</div>
+                    <div class="stat-delta" id="statPinnError">−4 m vs. observed</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-label">Error reduction</div>
+                    <div class="stat-value" id="statErrorReduction">82%</div>
+                    <div class="stat-delta">vs. physics‑only baseline</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <footer>
+        <span>AtmosPINN Lab · Physics‑Informed AI for Atmospheric Inference</span>
+        <span>Designed for live demo: plug in real flights as you collect them.</span>
+      </footer>
+    </div>
+
+    <script>
+      let atmosChart;
+
+      function scrollToDemo() {
+        const el = document.getElementById("demo");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function scrollToSummary() {
+        const el = document.getElementById("summary");
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function loadPreset(type) {
+        const mass = document.getElementById("rocketMass");
+        const motor = document.getElementById("motorClass");
+        const peakAlt = document.getElementById("peakAlt");
+        const maxAccel = document.getElementById("maxAccel");
+        const windGround = document.getElementById("windGround");
+        const stability = document.getElementById("stabilityCal");
+
+        if (type === "low") {
+          mass.value = 0.35;
+          motor.value = "B";
+          peakAlt.value = 110;
+          maxAccel.value = 7.5;
+          windGround.value = 1.2;
+          stability.value = 1.8;
+        } else if (type === "windy") {
+          mass.value = 0.42;
+          motor.value = "C";
+          peakAlt.value = 210;
+          maxAccel.value = 10.8;
+          windGround.value = 5.2;
+          stability.value = 1.4;
+        } else if (type === "aggressive") {
+          mass.value = 0.52;
+          motor.value = "D";
+          peakAlt.value = 420;
+          maxAccel.value = 18.3;
+          windGround.value = 3.6;
+          stability.value = 1.2;
+        }
+
+        setStatus("Preset loaded. Now run inference.");
+      }
+
+      function resetInputs() {
+        const ids = ["rocketMass", "peakAlt", "maxAccel", "windGround", "stabilityCal"];
+        ids.forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.value = "";
+        });
+        const motor = document.getElementById("motorClass");
+        if (motor) motor.value = "C";
+        setStatus("Inputs cleared. Load a preset or enter your own flight.");
+      }
+
+      function setStatus(message) {
+        const status = document.getElementById("demoStatus");
+        if (status) {
+          status.innerHTML = message.replace(
+            /(Preset loaded|Ready|Inference complete|Inputs cleared)/,
+            "<span>$1</span>"
+          );
+        }
+      }
+
+      function runInference() {
+        const mass = parseFloat(document.getElementById("rocketMass").value || "0.45");
+        const motorClass = document.getElementById("motorClass").value || "C";
+        const peakAlt = parseFloat(document.getElementById("peakAlt").value || "360");
+        const maxAccel = parseFloat(document.getElementById("maxAccel").value || "14");
+        const windGround = parseFloat(document.getElementById("windGround").value || "3");
+        const stability = parseFloat(document.getElementById("stabilityCal").value || "1.5");
+
+        const motorScale = { A: 0.5, B: 0.8, C: 1, D: 1.35, E: 1.7 }[motorClass] || 1;
+
+        const nominalApogee = 320 * motorScale * (0.9 + 0.2 * (stability / 2));
+        const windPenalty = Math.min(windGround * 8, 60);
+        const baselineApogee = Math.round(nominalApogee - windPenalty + (maxAccel - 12) * 1.4);
+
+        const observedApogee = peakAlt || 360;
+        const rawError = observedApogee - baselineApogee;
+
+        const pinnApogee = Math.round(
+          baselineApogee + rawError * (0.7 + Math.min(maxAccel / 40, 0.15))
+        );
+        const pinnError = observedApogee - pinnApogee;
+
+        const baselineErrorAbs = Math.abs(rawError);
+        const pinnErrorAbs = Math.abs(pinnError);
+        const errorReduction = baselineErrorAbs
+          ? Math.round(((baselineErrorAbs - pinnErrorAbs) / baselineErrorAbs) * 100)
+          : 0;
+
+        const altMax = Math.max(observedApogee * 1.1, 150);
+        const N = 28;
+        const altitudes = [];
+        const density = [];
+        const wind = [];
+
+        for (let i = 0; i < N; i++) {
+          const z = (altMax * i) / (N - 1);
+          altitudes.push(Math.round(z));
+
+          const baseRho = Math.exp(-z / 8000);
+          const shape =
+            1 +
+            0.2 * Math.sin((z / altMax) * Math.PI) +
+            0.15 * Math.cos((z / altMax) * Math.PI * 1.7);
+          const normMass = Math.min(Math.max((mass - 0.3) / 0.5, 0), 1);
+          const rho = baseRho * (shape + normMass * 0.15);
+          density.push(parseFloat((rho * 1.25).toFixed(3)));
+
+          const shearCenter = altMax * (0.5 + windGround / 25);
+          const shearWidth = altMax * 0.25;
+          const shearPeak = windGround + 4 + motorScale * 1.5;
+          const shear =
+            shearPeak *
+            Math.exp(-Math.pow(z - shearCenter, 2) / (2 * Math.pow(shearWidth, 2)));
+          const windProfile = Math.max(
+            0,
+            shear + 0.6 * windGround + 0.8 * (z / altMax) * windGround
+          );
+          wind.push(parseFloat(windProfile.toFixed(2)));
+        }
+
+        updateHeroCards(pinnApogee, errorReduction, Math.max(...wind));
+        updateStats(baselineApogee, observedApogee, pinnApogee, errorReduction);
+        updateChart(altitudes, density, wind);
+
+        setStatus("Inference complete. Explain how the PINN uses physics + data to learn this.");
+      }
+
+      function updateHeroCards(pinnApogee, errorReduction, peakWind) {
+        const heroApogee = document.getElementById("heroApogee");
+        const heroError = document.getElementById("heroError");
+        const heroShear = document.getElementById("heroShear");
+        if (heroApogee) heroApogee.textContent = pinnApogee + " m";
+        if (heroError) heroError.textContent = "↓ " + Math.max(errorReduction, 0) + "%";
+        if (heroShear) heroShear.textContent = peakWind.toFixed(1) + " m/s";
+      }
+
+      function updateStats(baselineApogee, observedApogee, pinnApogee, errorReduction) {
+        const baselineError = observedApogee - baselineApogee;
+        const pinnError = observedApogee - pinnApogee;
+
+        const baselineApogeeEl = document.getElementById("statBaselineApogee");
+        const baselineErrorEl = document.getElementById("statBaselineError");
+        const pinnApogeeEl = document.getElementById("statPinnApogee");
+        const pinnErrorEl = document.getElementById("statPinnError");
+        const errorReductionEl = document.getElementById("statErrorReduction");
+
+        if (baselineApogeeEl) baselineApogeeEl.textContent = baselineApogee + " m";
+        if (baselineErrorEl) {
+          baselineErrorEl.textContent =
+            (baselineError >= 0 ? "+" : "−") + Math.abs(baselineError) + " m vs. observed";
+          baselineErrorEl.classList.add("bad");
+        }
+        if (pinnApogeeEl) pinnApogeeEl.textContent = pinnApogee + " m";
+        if (pinnErrorEl) {
+          pinnErrorEl.textContent =
+            (pinnError >= 0 ? "+" : "−") + Math.abs(pinnError) + " m vs. observed";
+          pinnErrorEl.classList.remove("bad");
+        }
+        if (errorReductionEl) {
+          errorReductionEl.textContent = Math.max(errorReduction, 0) + "%";
+        }
+      }
+
+      function updateChart(altitudes, density, wind) {
+        const ctx = document.getElementById("atmosChart");
+        if (!ctx) return;
+
+        if (atmosChart) {
+          atmosChart.destroy();
+        }
+
+        atmosChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: altitudes,
+            datasets: [
+              {
+                label: "Effective density (normalized)",
+                data: density,
+                borderColor: "#22d3ee",
+                backgroundColor: "rgba(34, 211, 238, 0.1)",
+                tension: 0.35,
+                borderWidth: 2,
+                yAxisID: "yDensity",
+              },
+              {
+                label: "Cross‑wind speed (m/s)",
+                data: wind,
+                borderColor: "#a855f7",
+                backgroundColor: "rgba(168, 85, 247, 0.1)",
+                tension: 0.35,
+                borderWidth: 2,
+                yAxisID: "yWind",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: {
+                  color: "#9ca3af",
+                  font: { size: 11 },
+                },
+              },
+              tooltip: {
+                backgroundColor: "rgba(15, 23, 42, 0.96)",
+                borderColor: "rgba(148, 163, 184, 0.65)",
+                borderWidth: 1,
+                titleColor: "#e5e7eb",
+                bodyColor: "#e5e7eb",
+                cornerRadius: 10,
+                padding: 10,
+              },
+            },
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Altitude (m)",
+                  color: "#9ca3af",
+                  font: { size: 11 },
+                },
+                grid: {
+                  color: "rgba(30, 64, 175, 0.5)",
+                },
+                ticks: {
+                  color: "#6b7280",
+                  font: { size: 10 },
+                },
+              },
+              yDensity: {
+                position: "left",
+                title: {
+                  display: true,
+                  text: "Density (normalized)",
+                  color: "#9ca3af",
+                  font: { size: 11 },
+                },
+                grid: {
+                  color: "rgba(30, 64, 175, 0.2)",
+                },
+                ticks: {
+                  color: "#6b7280",
+                  font: { size: 10 },
+                },
+              },
+              yWind: {
+                position: "right",
+                title: {
+                  display: true,
+                  text: "Cross‑wind (m/s)",
+                  color: "#9ca3af",
+                  font: { size: 11 },
+                },
+                grid: {
+                  display: false,
+                },
+                ticks: {
+                  color: "#6b7280",
+                  font: { size: 10 },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        loadPreset("windy");
+        runInference();
+      });
+    </script>
+  </body>
+</html>
+
