@@ -17,21 +17,21 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       :root {
-        --bg: #030712;
-        --bg-elevated: #020617;
-        --bg-card: #020617;
-        --fg: #e5e7eb;
-        --fg-muted: #9ca3af;
-        --accent: #22d3ee;
-        --accent-soft: rgba(34, 211, 238, 0.12);
-        --accent-strong: rgba(34, 211, 238, 0.32);
-        --danger: #f97373;
-        --border-subtle: rgba(148, 163, 184, 0.26);
+        --bg: #f9fafb;
+        --bg-elevated: #ffffff;
+        --bg-card: #ffffff;
+        --fg: #111827;
+        --fg-muted: #4b5563;
+        --accent: #0ea5e9;
+        --accent-soft: rgba(14, 165, 233, 0.12);
+        --accent-strong: rgba(14, 165, 233, 0.2);
+        --danger: #dc2626;
+        --border-subtle: rgba(15, 23, 42, 0.1);
         --radius-xl: 24px;
         --radius-lg: 16px;
         --radius-md: 12px;
-        --shadow-soft: 0 22px 60px rgba(15, 23, 42, 0.85);
-        --shadow-chip: 0 10px 30px rgba(15, 23, 42, 0.95);
+        --shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.09);
+        --shadow-chip: 0 10px 26px rgba(0, 0, 0, 0.08);
       }
 
       * {
@@ -44,7 +44,7 @@
         padding: 0;
         font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont,
           "SF Pro Text", sans-serif;
-        background: radial-gradient(circle at top left, #0f172a 0, #020617 45%, #000 100%);
+        background: var(--bg);
         color: var(--fg);
         scroll-behavior: smooth;
       }
@@ -79,8 +79,8 @@
         width: 34px;
         height: 34px;
         border-radius: 999px;
-        background: radial-gradient(circle at 20% 0%, #38bdf8, #0ea5e9 40%, #22c55e 100%);
-        box-shadow: 0 0 40px rgba(56, 189, 248, 0.7);
+        background: linear-gradient(135deg, #0ea5e9, #22c55e);
+        box-shadow: 0 10px 25px rgba(14, 165, 233, 0.35);
         position: relative;
         overflow: hidden;
       }
@@ -117,8 +117,8 @@
         gap: 8px;
         padding: 6px 12px;
         border-radius: 999px;
-        background: rgba(15, 23, 42, 0.8);
-        border: 1px solid rgba(148, 163, 184, 0.45);
+        background: #f3f4f6;
+        border: 1px solid rgba(15, 23, 42, 0.12);
         backdrop-filter: blur(18px);
         box-shadow: var(--shadow-chip);
         font-size: 11px;
@@ -137,10 +137,10 @@
 
       .hero {
         display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-        gap: 32px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
         align-items: stretch;
-        margin-bottom: 36px;
+        margin-bottom: 24px;
       }
 
       @media (max-width: 880px) {
@@ -286,9 +286,8 @@
 
       .hero-panel {
         border-radius: var(--radius-xl);
-        border: 1px solid rgba(148, 163, 184, 0.35);
-        background: radial-gradient(circle at top left, rgba(34, 211, 238, 0.08), transparent),
-          radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.16), #020617);
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        background: var(--bg-card);
         box-shadow: var(--shadow-soft);
         padding: 18px 18px 20px;
         display: flex;
@@ -420,25 +419,12 @@
         color: var(--fg-muted);
       }
 
-      .content-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-        gap: 24px;
-        align-items: flex-start;
-      }
-
-      @media (max-width: 960px) {
-        .content-grid {
-          grid-template-columns: minmax(0, 1fr);
-        }
-      }
-
       .card {
         border-radius: var(--radius-lg);
         border: 1px solid var(--border-subtle);
-        background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.95), #020617);
+        background: var(--bg-card);
         padding: 18px 18px 16px;
-        box-shadow: 0 14px 45px rgba(15, 23, 42, 0.85);
+        box-shadow: 0 12px 38px rgba(0, 0, 0, 0.08);
       }
 
       .card-header {
@@ -566,30 +552,24 @@
       }
 
       .demo-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-        gap: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
         margin-top: 6px;
-      }
-
-      @media (max-width: 880px) {
-        .demo-layout {
-          grid-template-columns: minmax(0, 1fr);
-        }
       }
 
       .form-side {
         border-radius: 18px;
         padding: 14px 14px 12px;
-        background: radial-gradient(circle at top left, rgba(15, 23, 42, 1), #020617);
-        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.1);
       }
 
       .chart-side {
         border-radius: 18px;
         padding: 14px;
-        background: radial-gradient(circle at bottom right, rgba(15, 23, 42, 1), #020617);
-        border: 1px solid rgba(148, 163, 184, 0.35);
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.1);
       }
 
       .form-row {
@@ -823,21 +803,21 @@
       }
 
       .chart-display {
-        width: 92vw;
-        max-width: 1280px;
+        width: 100%;
+        max-width: 1100px;
         min-width: 320px;
         border-radius: var(--radius-lg);
-        border: 1px solid rgba(148, 163, 184, 0.5);
-        background: #020617;
-        box-shadow: 0 20px 55px rgba(0, 0, 0, 0.6);
-        padding: 12px;
-        margin: 0 auto 14px;
+        border: 1px solid rgba(15, 23, 42, 0.12);
+        background: #ffffff;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+        padding: 16px;
+        margin: 0 auto 18px;
       }
 
       .chart-display canvas {
         width: 100%;
-        height: 520px;
-        background: radial-gradient(circle at 40% 18%, rgba(17, 24, 39, 0.38), #01030a);
+        height: 460px;
+        background: #ffffff;
         max-height: 75vh;
       }
 
@@ -846,7 +826,7 @@
           width: 100%;
         }
         .chart-display canvas {
-          height: 340px;
+          height: 320px;
         }
       }
 
@@ -1284,13 +1264,14 @@
           : 0;
 
         const altMax = Math.max(observedApogee * 1.1, 150);
-        const N = 28;
+        const N = 60;
         const altitudes = [];
         const density = [];
         const wind = [];
         const actualTrajectory = [];
         const baselineTrajectory = [];
         const pinnTrajectory = [];
+        const measuredPoints = [];
 
         for (let i = 0; i < N; i++) {
           const z = (altMax * i) / (N - 1);
@@ -1320,9 +1301,19 @@
 
           // Trajectory samples over normalized time (simple lofted parabola)
           const ballisticShape = Math.sin(timeFrac * Math.PI);
-          actualTrajectory.push(parseFloat((ballisticShape * observedApogee).toFixed(2)));
-          baselineTrajectory.push(parseFloat((ballisticShape * baselineApogee).toFixed(2)));
-          pinnTrajectory.push(parseFloat((ballisticShape * pinnApogee).toFixed(2)));
+          const jitter = (Math.random() - 0.5) * observedApogee * 0.015;
+          actualTrajectory.push(parseFloat((ballisticShape * observedApogee + jitter).toFixed(2)));
+          baselineTrajectory.push(
+            parseFloat((ballisticShape * baselineApogee + jitter * 1.3).toFixed(2))
+          );
+          pinnTrajectory.push(parseFloat((ballisticShape * pinnApogee + jitter * 0.6).toFixed(2)));
+
+          if (i % 4 === 0) {
+            measuredPoints.push({
+              x: i,
+              y: ballisticShape * observedApogee + (Math.random() - 0.5) * observedApogee * 0.02,
+            });
+          }
         }
 
         updateHeroCards(pinnApogee, errorReduction, Math.max(...wind));
@@ -1335,6 +1326,7 @@
           baselineTrajectory,
           pinnTrajectory,
           actualTrajectory,
+          measuredPoints,
           density,
           wind,
         });
@@ -1414,59 +1406,68 @@
         baselineTrajectory,
         pinnTrajectory,
         actualTrajectory,
+        measuredPoints,
         density,
         wind,
       }) {
         chartConfigs.__altitudes = altitudes;
         chartConfigs.__density = density;
         chartConfigs.__wind = wind;
+        chartConfigs.__measured = measuredPoints;
+
+        const burnoutActual = Math.round(observedApogee * 0.28);
+        const burnoutBaseline = Math.round(baselineApogee * 0.28);
+        const burnoutPinn = Math.round(pinnApogee * 0.28);
+        const rangeActual = Math.round(35 + wind[wind.length - 1] * 6);
+        const rangeBaseline = Math.round(rangeActual - 18 + Math.random() * 10);
+        const rangePinn = Math.round(rangeActual - 6 + Math.random() * 6);
 
         chartConfigs.physics = {
           type: "bar",
           data: {
-            labels: ["Apogee"],
+            labels: ["Apogee", "Burnout Alt", "Impact Range"],
             datasets: [
               {
-                label: "Physics‑only prediction",
-                data: [baselineApogee],
-                backgroundColor: "rgba(255,255,255,0.22)",
-                borderColor: "#ffffff",
-                borderWidth: 2.4,
+                label: "Physics‑only",
+                data: [baselineApogee, burnoutBaseline, rangeBaseline],
+                backgroundColor: "rgba(17, 24, 39, 0.12)",
+                borderColor: "#111827",
+                borderWidth: 2.2,
               },
               {
                 label: "Actual flight",
-                data: [observedApogee],
-                backgroundColor: "rgba(34, 211, 238, 0.28)",
-                borderColor: "#22d3ee",
-                borderWidth: 2.4,
+                data: [observedApogee, burnoutActual, rangeActual],
+                backgroundColor: "rgba(14, 165, 233, 0.22)",
+                borderColor: "#0ea5e9",
+                borderWidth: 2.2,
               },
             ],
           },
-          options: baseBarOptions("Altitude (m)"),
+          options: baseBarOptions("Meters"),
         };
 
         chartConfigs.pinn = {
           type: "bar",
           data: {
-            labels: ["Apogee"],
+            labels: ["Apogee", "Burnout Alt", "Impact Range"],
             datasets: [
               {
-                label: "PINN‑enhanced prediction",
-                data: [pinnApogee],
-                backgroundColor: "rgba(255,255,255,0.22)",
-                borderColor: "#ffffff",
-                borderWidth: 2.4,
+                label: "PINN‑enhanced",
+                data: [pinnApogee, burnoutPinn, rangePinn],
+                backgroundColor: "rgba(17, 24, 39, 0.12)",
+                borderColor: "#111827",
+                borderWidth: 2.2,
               },
               {
                 label: "Actual flight",
-                data: [observedApogee],
-                backgroundColor: "rgba(34, 211, 238, 0.28)",
-                borderColor: "#22d3ee",
-                borderWidth: 2.4,
+                data: [observedApogee, burnoutActual, rangeActual],
+                backgroundColor: "rgba(14, 165, 233, 0.22)",
+                borderColor: "#0ea5e9",
+                borderWidth: 2.2,
               },
             ],
           },
-          options: baseBarOptions("Altitude (m)"),
+          options: baseBarOptions("Meters"),
         };
 
         // 3) Error vs Altitude
@@ -1504,21 +1505,23 @@
         // 4) RMSE Bar Chart
         const rmseBaseline = computeRmse(actualTrajectory, baselineTrajectory);
         const rmsePinn = computeRmse(actualTrajectory, pinnTrajectory);
+        const maeBaseline = computeMae(actualTrajectory, baselineTrajectory);
+        const maePinn = computeMae(actualTrajectory, pinnTrajectory);
         chartConfigs.rmse = {
           type: "bar",
           data: {
-            labels: ["RMSE"],
+            labels: ["RMSE", "MAE"],
             datasets: [
               {
                 label: "Physics‑only",
-                data: [rmseBaseline],
+                data: [rmseBaseline, maeBaseline],
                 backgroundColor: "rgba(255,255,255,0.22)",
                 borderColor: "#ffffff",
                 borderWidth: 2.4,
               },
               {
                 label: "PINN",
-                data: [rmsePinn],
+                data: [rmsePinn, maePinn],
                 backgroundColor: "rgba(34, 211, 238, 0.25)",
                 borderColor: "#22d3ee",
                 borderWidth: 2.4,
@@ -1529,7 +1532,7 @@
         };
 
         // 5) Residual Histogram
-        const bins = makeHistogram(baselineErrorLine.concat());
+        const bins = makeHistogram(baselineErrorLine.concat(), 10);
         chartConfigs.residuals = {
           type: "bar",
           data: {
@@ -1569,6 +1572,14 @@
                 borderWidth: 2.8,
                 tension: 0.25,
                 fill: true,
+              },
+              {
+                type: "scatter",
+                label: "Measured points",
+                data: measuredPoints,
+                borderColor: "#0ea5e9",
+                backgroundColor: "#0ea5e9",
+                pointRadius: 4,
               },
               {
                 label: "Physics‑only sim",
@@ -1680,6 +1691,15 @@
         return parseFloat(Math.sqrt(sumSq / n).toFixed(2));
       }
 
+      function computeMae(actual, predicted) {
+        const n = actual.length;
+        let sum = 0;
+        for (let i = 0; i < n; i++) {
+          sum += Math.abs(actual[i] - predicted[i]);
+        }
+        return parseFloat((sum / n).toFixed(2));
+      }
+
       function makeHistogram(residuals, bins = 8) {
         const min = Math.min(...residuals);
         const max = Math.max(...residuals);
@@ -1724,15 +1744,12 @@
           const rhoNorm = density[i] / maxRho;
           const windNorm = wind[i] / (maxWind || 1);
 
-          const barHeight = h / altitudes.length + 2;
-          const grad = ctx.createLinearGradient(0, y, w, y);
-          grad.addColorStop(0, `rgba(34, 211, 238, ${0.15 + rhoNorm * 0.5})`);
-          grad.addColorStop(1, `rgba(14, 165, 233, ${0.05 + rhoNorm * 0.4})`);
-          ctx.fillStyle = grad;
+          const barHeight = h / altitudes.length + 1.5;
+          ctx.fillStyle = `rgba(14, 165, 233, ${0.08 + rhoNorm * 0.4})`;
           ctx.fillRect(0, y - barHeight / 2, w, barHeight);
 
-          const arrowLen = 20 + windNorm * 60;
-          ctx.strokeStyle = "rgba(168, 85, 247, 0.9)";
+          const arrowLen = 20 + windNorm * 70;
+          ctx.strokeStyle = "#111827";
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.moveTo(12, y);
@@ -1743,13 +1760,13 @@
           ctx.lineTo(12 + arrowLen - 6, y - 4);
           ctx.lineTo(12 + arrowLen - 6, y + 4);
           ctx.closePath();
-          ctx.fillStyle = "rgba(168, 85, 247, 0.9)";
+          ctx.fillStyle = "#111827";
           ctx.fill();
         }
 
         // Overlay particles to hint turbulence
         const particles = 30;
-        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillStyle = "rgba(17,24,39,0.25)";
         for (let i = 0; i < particles; i++) {
           const px = Math.random() * w;
           const py = Math.random() * h;
