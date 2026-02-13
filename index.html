@@ -17,21 +17,21 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       :root {
-        --bg: #f9fafb;
-        --bg-elevated: #ffffff;
-        --bg-card: #ffffff;
-        --fg: #111827;
-        --fg-muted: #4b5563;
-        --accent: #0ea5e9;
-        --accent-soft: rgba(14, 165, 233, 0.12);
-        --accent-strong: rgba(14, 165, 233, 0.2);
-        --danger: #dc2626;
-        --border-subtle: rgba(15, 23, 42, 0.1);
+        --bg: #05080f;
+        --bg-elevated: #0b1020;
+        --bg-card: #0c1224;
+        --fg: #e5e7eb;
+        --fg-muted: #9ca3af;
+        --accent: #38bdf8;
+        --accent-soft: rgba(56, 189, 248, 0.14);
+        --accent-strong: rgba(56, 189, 248, 0.25);
+        --danger: #f87171;
+        --border-subtle: rgba(148, 163, 184, 0.18);
         --radius-xl: 24px;
         --radius-lg: 16px;
         --radius-md: 12px;
-        --shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.09);
-        --shadow-chip: 0 10px 26px rgba(0, 0, 0, 0.08);
+        --shadow-soft: 0 22px 60px rgba(0, 0, 0, 0.55);
+        --shadow-chip: 0 10px 30px rgba(0, 0, 0, 0.5);
       }
 
       * {
@@ -79,8 +79,8 @@
         width: 34px;
         height: 34px;
         border-radius: 999px;
-        background: linear-gradient(135deg, #0ea5e9, #22c55e);
-        box-shadow: 0 10px 25px rgba(14, 165, 233, 0.35);
+        background: radial-gradient(circle at 30% 20%, #38bdf8, #0ea5e9 60%, #312e81);
+        box-shadow: 0 0 30px rgba(56, 189, 248, 0.6);
         position: relative;
         overflow: hidden;
       }
@@ -117,9 +117,8 @@
         gap: 8px;
         padding: 6px 12px;
         border-radius: 999px;
-        background: #f3f4f6;
-        border: 1px solid rgba(15, 23, 42, 0.12);
-        backdrop-filter: blur(18px);
+        background: rgba(15, 23, 42, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.3);
         box-shadow: var(--shadow-chip);
         font-size: 11px;
         text-transform: uppercase;
@@ -424,7 +423,7 @@
         border: 1px solid var(--border-subtle);
         background: var(--bg-card);
         padding: 18px 18px 16px;
-        box-shadow: 0 12px 38px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--shadow-soft);
       }
 
       .card-header {
@@ -561,15 +560,15 @@
       .form-side {
         border-radius: 18px;
         padding: 14px 14px 12px;
-        background: #ffffff;
-        border: 1px solid rgba(15, 23, 42, 0.1);
+        background: var(--bg-elevated);
+        border: 1px solid rgba(148, 163, 184, 0.2);
       }
 
       .chart-side {
         border-radius: 18px;
         padding: 14px;
-        background: #ffffff;
-        border: 1px solid rgba(15, 23, 42, 0.1);
+        background: var(--bg-elevated);
+        border: 1px solid rgba(148, 163, 184, 0.2);
       }
 
       .form-row {
@@ -785,9 +784,9 @@
         cursor: pointer;
         padding: 7px 10px;
         border-radius: 10px;
-        border: 1px solid rgba(148, 163, 184, 0.9);
-        background: rgba(2, 6, 23, 0.95);
-        color: #cfd8e3;
+        border: 1px solid rgba(148, 163, 184, 0.8);
+        background: rgba(10, 12, 26, 0.85);
+        color: #e5e7eb;
         font-size: 11px;
         letter-spacing: 0.08em;
         text-transform: uppercase;
@@ -808,8 +807,8 @@
         min-width: 320px;
         border-radius: var(--radius-lg);
         border: 1px solid rgba(15, 23, 42, 0.12);
-        background: #ffffff;
-        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+        background: #05080f;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
         padding: 16px;
         margin: 0 auto 18px;
       }
@@ -817,7 +816,7 @@
       .chart-display canvas {
         width: 100%;
         height: 460px;
-        background: #ffffff;
+        background: #05080f;
         max-height: 75vh;
       }
 
@@ -1474,6 +1473,10 @@
         const baselineErrorLine = altitudes.map(
           (alt, i) => actualTrajectory[i] - baselineTrajectory[i]
         );
+        const pinnErrorLine = altitudes.map((alt, i) => actualTrajectory[i] - pinnTrajectory[i]);
+        const pinnStd = computeStdFromResiduals(pinnErrorLine);
+        const bandUpper = pinnErrorLine.map((v) => v + pinnStd);
+        const bandLower = pinnErrorLine.map((v) => v - pinnStd);
         chartConfigs.error = {
           type: "line",
           data: {
@@ -1490,12 +1493,30 @@
               },
               {
                 label: "PINN residual",
-                data: altitudes.map((alt, i) => actualTrajectory[i] - pinnTrajectory[i]),
+                data: pinnErrorLine,
                 borderColor: "#22d3ee",
                 backgroundColor: "rgba(34, 211, 238, 0.12)",
                 tension: 0.32,
                 borderWidth: 2.6,
                 fill: true,
+              },
+              {
+                label: "PINN ±1σ band",
+                data: bandUpper,
+                borderColor: "rgba(34, 211, 238, 0.001)",
+                backgroundColor: "rgba(34, 211, 238, 0.08)",
+                tension: 0.32,
+                borderWidth: 0,
+                fill: "+1",
+              },
+              {
+                label: "PINN band lower",
+                data: bandLower,
+                borderColor: "rgba(34, 211, 238, 0.001)",
+                backgroundColor: "rgba(34, 211, 238, 0.08)",
+                tension: 0.32,
+                borderWidth: 0,
+                fill: "-1",
               },
             ],
           },
@@ -1551,6 +1572,17 @@
                 backgroundColor: "rgba(34, 211, 238, 0.32)",
                 borderColor: "#22d3ee",
                 borderWidth: 1.4,
+              },
+              {
+                type: "line",
+                label: "Residual density",
+                data: bins.densityCurve,
+                borderColor: "#f59e0b",
+                borderWidth: 2,
+                tension: 0.35,
+                yAxisID: "yDensity",
+                pointRadius: 0,
+                fill: false,
               },
             ],
           },
@@ -1632,8 +1664,8 @@
       function axisOptions(label) {
         return {
           title: { display: true, text: label, color: "#e5e7eb", font: { size: 12 } },
-          grid: { color: "rgba(255, 255, 255, 0.12)" },
-          ticks: { color: "#cbd5e1", font: { size: 12 } },
+          grid: { color: "rgba(255, 255, 255, 0.08)" },
+          ticks: { color: "#e5e7eb", font: { size: 12 } },
         };
       }
 
@@ -1677,6 +1709,11 @@
           scales: {
             x: { ...axisOptions(xLabel), stacked: true },
             y: { ...axisOptions(yLabel), stacked: true },
+            yDensity: {
+              display: false,
+              min: 0,
+              max: 1.2,
+            },
           },
         };
       }
@@ -1700,6 +1737,17 @@
         return parseFloat((sum / n).toFixed(2));
       }
 
+      function computeStdFromResiduals(residuals) {
+        const n = residuals.length;
+        const mean = residuals.reduce((a, b) => a + b, 0) / n;
+        let sumSq = 0;
+        residuals.forEach((r) => {
+          const d = r - mean;
+          sumSq += d * d;
+        });
+        return Math.sqrt(sumSq / n);
+      }
+
       function makeHistogram(residuals, bins = 8) {
         const min = Math.min(...residuals);
         const max = Math.max(...residuals);
@@ -1707,6 +1755,7 @@
         const labels = [];
         const physicsCounts = new Array(bins).fill(0);
         const pinnCounts = new Array(bins).fill(0);
+        const densityCurve = [];
 
         for (let i = 0; i < bins; i++) {
           const start = min + i * width;
@@ -1725,7 +1774,12 @@
           pinnCounts[idx]++;
         });
 
-        return { labels, physicsCounts, pinnCounts };
+        const maxCount = Math.max(...physicsCounts, ...pinnCounts) || 1;
+        for (let i = 0; i < bins; i++) {
+          densityCurve.push((physicsCounts[i] + pinnCounts[i]) / (2 * maxCount));
+        }
+
+        return { labels, physicsCounts, pinnCounts, densityCurve };
       }
 
       function renderAtmosphereField(altitudes, density, wind, canvasId = "chartDisplay") {
@@ -1745,12 +1799,12 @@
           const windNorm = wind[i] / (maxWind || 1);
 
           const barHeight = h / altitudes.length + 1.5;
-          ctx.fillStyle = `rgba(14, 165, 233, ${0.08 + rhoNorm * 0.4})`;
+          ctx.fillStyle = `rgba(56, 189, 248, ${0.06 + rhoNorm * 0.45})`;
           ctx.fillRect(0, y - barHeight / 2, w, barHeight);
 
           const arrowLen = 20 + windNorm * 70;
-          ctx.strokeStyle = "#111827";
-          ctx.lineWidth = 2;
+          ctx.strokeStyle = "#e5e7eb";
+          ctx.lineWidth = 2.2;
           ctx.beginPath();
           ctx.moveTo(12, y);
           ctx.lineTo(12 + arrowLen, y);
@@ -1760,13 +1814,13 @@
           ctx.lineTo(12 + arrowLen - 6, y - 4);
           ctx.lineTo(12 + arrowLen - 6, y + 4);
           ctx.closePath();
-          ctx.fillStyle = "#111827";
+          ctx.fillStyle = "#e5e7eb";
           ctx.fill();
         }
 
         // Overlay particles to hint turbulence
         const particles = 30;
-        ctx.fillStyle = "rgba(17,24,39,0.25)";
+        ctx.fillStyle = "rgba(255,255,255,0.28)";
         for (let i = 0; i < particles; i++) {
           const px = Math.random() * w;
           const py = Math.random() * h;
