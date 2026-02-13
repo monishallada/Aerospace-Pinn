@@ -794,47 +794,59 @@
         color: var(--fg-muted);
       }
 
-      .chart-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 12px;
-        margin-top: 10px;
-      }
-
-      .chart-card {
-        border-radius: var(--radius-md);
-        border: 1px solid var(--border-subtle);
-        background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.92), #020617);
-        padding: 10px 12px 12px;
-        box-shadow: 0 10px 28px rgba(15, 23, 42, 0.75);
+      .chart-toggle-group {
         display: flex;
-        flex-direction: column;
-        gap: 6px;
-        min-height: 210px;
-      }
-
-      .chart-card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        flex-wrap: wrap;
         gap: 8px;
+        margin: 10px 0 12px;
       }
 
-      .chart-card-title {
-        font-size: 12px;
+      .chart-toggle {
+        cursor: pointer;
+        padding: 7px 10px;
+        border-radius: 10px;
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        background: rgba(2, 6, 23, 0.9);
+        color: #cfd8e3;
+        font-size: 11px;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        letter-spacing: 0.14em;
-        color: var(--fg-muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
       }
 
-      .chart-card canvas {
+      .chart-toggle.active {
+        border-color: #22d3ee;
+        color: #22d3ee;
+        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.2);
+      }
+
+      .chart-display {
+        width: 70vw;
+        max-width: 100%;
+        min-width: 260px;
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        background: #020617;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+        padding: 10px;
+        margin: 0 auto 12px;
+      }
+
+      .chart-display canvas {
         width: 100%;
-        height: 170px;
+        height: 360px;
+        background: radial-gradient(circle at 30% 20%, rgba(15, 23, 42, 0.35), #01030a);
+        max-height: 70vh;
       }
 
-      @media (max-width: 640px) {
-        .chart-card canvas {
-          height: 150px;
+      @media (max-width: 720px) {
+        .chart-display {
+          width: 100%;
+        }
+        .chart-display canvas {
+          height: 280px;
         }
       }
 
@@ -1126,7 +1138,7 @@
                   <div>
                     <div class="chart-title">2 · Most important 6 graphs</div>
                     <div class="subcaption">
-                      Auto-generated from your inputs. If space is tight, show these and nothing else.
+                      Select a view; chart renders in a focused panel (70% viewport width).
                     </div>
                   </div>
                   <div class="chart-tags">
@@ -1153,51 +1165,18 @@
                   </div>
                 </div>
 
-                <div class="chart-grid" style="margin-top: 14px">
-                  <div class="chart-card">
-                    <div class="chart-card-header">
-                      <div class="chart-card-title">Predicted vs Actual (Physics)</div>
-                    </div>
-                    <canvas id="chartPhysicsVsActual"></canvas>
-                  </div>
-                  <div class="chart-card">
-                    <div class="chart-card-header">
-                      <div class="chart-card-title">Predicted vs Actual (PINN)</div>
-                    </div>
-                    <canvas id="chartPinnVsActual"></canvas>
-                  </div>
-                  <div class="chart-card">
-                    <div class="chart-card-header">
-                      <div class="chart-card-title">Error vs Altitude</div>
-                    </div>
-                    <canvas id="chartErrorAltitude"></canvas>
-                  </div>
-                  <div class="chart-card">
-                    <div class="chart-card-header">
-                      <div class="chart-card-title">RMSE Bar Chart</div>
-                    </div>
-                    <canvas id="chartRmse"></canvas>
-                  </div>
-                  <div class="chart-card">
-                    <div class="chart-card-header">
-                      <div class="chart-card-title">Residual Histogram</div>
-                    </div>
-                    <canvas id="chartResiduals"></canvas>
-                  </div>
-                  <div class="chart-card">
-                    <div class="chart-card-header">
-                      <div class="chart-card-title">Flight Trajectory Overlay</div>
-                    </div>
-                    <canvas id="chartTrajectory"></canvas>
-                  </div>
+                <div class="chart-toggle-group">
+                  <button class="chart-toggle active" data-chart="physics">Physics vs Actual</button>
+                  <button class="chart-toggle" data-chart="pinn">PINN vs Actual</button>
+                  <button class="chart-toggle" data-chart="error">Error vs Altitude</button>
+                  <button class="chart-toggle" data-chart="rmse">RMSE</button>
+                  <button class="chart-toggle" data-chart="residuals">Residual Histogram</button>
+                  <button class="chart-toggle" data-chart="trajectory">Flight Trajectory</button>
+                  <button class="chart-toggle" data-chart="field">Atmosphere Field</button>
                 </div>
 
-                <div class="chart-card" style="margin-top: 14px">
-                  <div class="chart-card-header">
-                    <div class="chart-card-title">Atmospheric inference field</div>
-                    <span class="chart-tag">Density + cross‑wind profile</span>
-                  </div>
-                  <canvas id="atmosField" style="height: 200px"></canvas>
+                <div class="chart-display">
+                  <canvas id="chartDisplay"></canvas>
                 </div>
               </div>
             </div>
@@ -1213,6 +1192,8 @@
 
     <script>
       let charts = {};
+      let chartConfigs = {};
+      let currentChartId = "physics";
 
       function scrollToDemo() {
         const el = document.getElementById("demo");
@@ -1397,10 +1378,32 @@
         }
       }
 
-      function createOrUpdateChart(id, config) {
-        if (!document.getElementById(id)) return;
+      function createOrUpdateChart(config) {
+        const id = "chartDisplay";
+        const el = document.getElementById(id);
+        if (!el) return;
         if (charts[id]) charts[id].destroy();
-        charts[id] = new Chart(document.getElementById(id), config);
+        if (!config) return;
+        charts[id] = new Chart(el, config);
+      }
+
+      function setActiveChart(chartId) {
+        currentChartId = chartId;
+        document.querySelectorAll(".chart-toggle").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.chart === chartId);
+        });
+
+        if (chartId === "field") {
+          createOrUpdateChart(null);
+          renderAtmosphereField(
+            chartConfigs.__altitudes,
+            chartConfigs.__density,
+            chartConfigs.__wind
+          );
+          return;
+        }
+
+        createOrUpdateChart(chartConfigs[chartId]);
       }
 
       function updateCharts({
@@ -1414,8 +1417,11 @@
         density,
         wind,
       }) {
-        // 1) Predicted vs Actual (Physics)
-        createOrUpdateChart("chartPhysicsVsActual", {
+        chartConfigs.__altitudes = altitudes;
+        chartConfigs.__density = density;
+        chartConfigs.__wind = wind;
+
+        chartConfigs.physics = {
           type: "bar",
           data: {
             labels: ["Apogee"],
@@ -1423,24 +1429,23 @@
               {
                 label: "Physics‑only prediction",
                 data: [baselineApogee],
-                backgroundColor: "rgba(56, 189, 248, 0.6)",
-                borderColor: "#22d3ee",
+                backgroundColor: "rgba(255,255,255,0.22)",
+                borderColor: "#ffffff",
                 borderWidth: 1.5,
               },
               {
                 label: "Actual flight",
                 data: [observedApogee],
-                backgroundColor: "rgba(249, 115, 129, 0.6)",
-                borderColor: "#f97373",
+                backgroundColor: "rgba(34, 211, 238, 0.28)",
+                borderColor: "#22d3ee",
                 borderWidth: 1.5,
               },
             ],
           },
           options: baseBarOptions("Altitude (m)"),
-        });
+        };
 
-        // 2) Predicted vs Actual (PINN)
-        createOrUpdateChart("chartPinnVsActual", {
+        chartConfigs.pinn = {
           type: "bar",
           data: {
             labels: ["Apogee"],
@@ -1448,27 +1453,27 @@
               {
                 label: "PINN‑enhanced prediction",
                 data: [pinnApogee],
-                backgroundColor: "rgba(168, 85, 247, 0.55)",
-                borderColor: "#a855f7",
+                backgroundColor: "rgba(255,255,255,0.22)",
+                borderColor: "#ffffff",
                 borderWidth: 1.5,
               },
               {
                 label: "Actual flight",
                 data: [observedApogee],
-                backgroundColor: "rgba(34, 197, 94, 0.55)",
-                borderColor: "#22c55e",
+                backgroundColor: "rgba(34, 211, 238, 0.28)",
+                borderColor: "#22d3ee",
                 borderWidth: 1.5,
               },
             ],
           },
           options: baseBarOptions("Altitude (m)"),
-        });
+        };
 
         // 3) Error vs Altitude
         const baselineErrorLine = altitudes.map(
           (alt, i) => actualTrajectory[i] - baselineTrajectory[i]
         );
-        createOrUpdateChart("chartErrorAltitude", {
+        chartConfigs.error = {
           type: "line",
           data: {
             labels: altitudes,
@@ -1476,36 +1481,28 @@
               {
                 label: "Physics‑only residual",
                 data: baselineErrorLine,
-                borderColor: "#f97373",
-                backgroundColor: "rgba(249, 115, 129, 0.16)",
+                borderColor: "#ffffff",
+                backgroundColor: "rgba(255, 255, 255, 0.08)",
                 tension: 0.32,
                 borderWidth: 2,
               },
               {
                 label: "PINN residual",
                 data: altitudes.map((alt, i) => actualTrajectory[i] - pinnTrajectory[i]),
-                borderColor: "#22c55e",
-                backgroundColor: "rgba(34, 197, 94, 0.16)",
+                borderColor: "#22d3ee",
+                backgroundColor: "rgba(34, 211, 238, 0.12)",
                 tension: 0.32,
                 borderWidth: 2,
               },
             ],
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: basePlugins(),
-            scales: {
-              x: axisOptions("Altitude (m)"),
-              y: axisOptions("Residual (m)"),
-            },
-          },
-        });
+          options: darkLineOptions("Altitude (m)", "Residual (m)"),
+        };
 
         // 4) RMSE Bar Chart
         const rmseBaseline = computeRmse(actualTrajectory, baselineTrajectory);
         const rmsePinn = computeRmse(actualTrajectory, pinnTrajectory);
-        createOrUpdateChart("chartRmse", {
+        chartConfigs.rmse = {
           type: "bar",
           data: {
             labels: ["RMSE"],
@@ -1513,25 +1510,25 @@
               {
                 label: "Physics‑only",
                 data: [rmseBaseline],
-                backgroundColor: "rgba(249, 115, 129, 0.65)",
-                borderColor: "#f97373",
+                backgroundColor: "rgba(255,255,255,0.22)",
+                borderColor: "#ffffff",
                 borderWidth: 1.5,
               },
               {
                 label: "PINN",
                 data: [rmsePinn],
-                backgroundColor: "rgba(34, 197, 94, 0.65)",
-                borderColor: "#22c55e",
+                backgroundColor: "rgba(34, 211, 238, 0.25)",
+                borderColor: "#22d3ee",
                 borderWidth: 1.5,
               },
             ],
           },
           options: baseBarOptions("Meters (lower is better)", true),
-        });
+        };
 
         // 5) Residual Histogram
         const bins = makeHistogram(baselineErrorLine.concat());
-        createOrUpdateChart("chartResiduals", {
+        chartConfigs.residuals = {
           type: "bar",
           data: {
             labels: bins.labels,
@@ -1539,29 +1536,21 @@
               {
                 label: "Physics residuals",
                 data: bins.physicsCounts,
-                backgroundColor: "rgba(249, 115, 129, 0.7)",
+                backgroundColor: "rgba(255, 255, 255, 0.28)",
               },
               {
                 label: "PINN residuals",
                 data: bins.pinnCounts,
-                backgroundColor: "rgba(34, 197, 94, 0.7)",
+                backgroundColor: "rgba(34, 211, 238, 0.32)",
               },
             ],
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: basePlugins(false),
-            scales: {
-              x: { ...axisOptions("Residual bin (m)"), stacked: true },
-              y: { ...axisOptions("Count"), stacked: true },
-            },
-          },
-        });
+          options: stackedOptions("Residual bin (m)", "Count"),
+        };
 
         // 6) Flight Trajectory Overlay
         const timeAxis = altitudes.map((_, i) => i);
-        createOrUpdateChart("chartTrajectory", {
+        chartConfigs.trajectory = {
           type: "line",
           data: {
             labels: timeAxis,
@@ -1569,8 +1558,8 @@
               {
                 label: "Actual flight",
                 data: actualTrajectory,
-                borderColor: "#22c55e",
-                backgroundColor: "rgba(34, 197, 94, 0.1)",
+                borderColor: "#ffffff",
+                backgroundColor: "rgba(255, 255, 255, 0.08)",
                 borderWidth: 2,
                 tension: 0.25,
               },
@@ -1578,32 +1567,24 @@
                 label: "Physics‑only sim",
                 data: baselineTrajectory,
                 borderColor: "#22d3ee",
-                backgroundColor: "rgba(34, 211, 238, 0.1)",
+                backgroundColor: "rgba(34, 211, 238, 0.08)",
                 borderWidth: 2,
                 tension: 0.25,
               },
               {
                 label: "PINN‑corrected sim",
                 data: pinnTrajectory,
-                borderColor: "#a855f7",
-                backgroundColor: "rgba(168, 85, 247, 0.1)",
+                borderColor: "#a5b4fc",
+                backgroundColor: "rgba(165, 180, 252, 0.08)",
                 borderWidth: 2,
                 tension: 0.25,
               },
             ],
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: basePlugins(),
-            scales: {
-              x: axisOptions("Normalized time"),
-              y: axisOptions("Altitude (m)"),
-            },
-          },
-        });
+          options: darkLineOptions("Normalized time", "Altitude (m)"),
+        };
 
-        renderAtmosphereField(altitudes, density, wind);
+        setActiveChart(currentChartId || "physics");
       }
 
       function basePlugins(showLegend = true) {
@@ -1611,8 +1592,8 @@
           legend: showLegend
             ? {
                 labels: {
-                  color: "#9ca3af",
-                  font: { size: 10 },
+                  color: "#e5e7eb",
+                  font: { size: 11 },
                 },
               }
             : { display: false },
@@ -1630,9 +1611,9 @@
 
       function axisOptions(label) {
         return {
-          title: { display: true, text: label, color: "#9ca3af", font: { size: 11 } },
-          grid: { color: "rgba(30, 64, 175, 0.25)" },
-          ticks: { color: "#6b7280", font: { size: 10 } },
+          title: { display: true, text: label, color: "#e5e7eb", font: { size: 11 } },
+          grid: { color: "rgba(255, 255, 255, 0.08)" },
+          ticks: { color: "#cbd5e1", font: { size: 11 } },
         };
       }
 
@@ -1644,14 +1625,38 @@
           scales: {
             x: {
               grid: { display: false },
-              ticks: { color: "#6b7280", font: { size: 10 } },
+              ticks: { color: "#cbd5e1", font: { size: 11 } },
             },
             y: {
-              title: { display: true, text: label, color: "#9ca3af", font: { size: 11 } },
-              grid: { color: "rgba(30, 64, 175, 0.25)" },
-              ticks: { color: "#6b7280", font: { size: 10 } },
+              title: { display: true, text: label, color: "#e5e7eb", font: { size: 11 } },
+              grid: { color: "rgba(255, 255, 255, 0.08)" },
+              ticks: { color: "#cbd5e1", font: { size: 11 } },
               beginAtZero: suggestedZero,
             },
+          },
+        };
+      }
+
+      function darkLineOptions(xLabel, yLabel) {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: basePlugins(),
+          scales: {
+            x: axisOptions(xLabel),
+            y: axisOptions(yLabel),
+          },
+        };
+      }
+
+      function stackedOptions(xLabel, yLabel) {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: basePlugins(),
+          scales: {
+            x: { ...axisOptions(xLabel), stacked: true },
+            y: { ...axisOptions(yLabel), stacked: true },
           },
         };
       }
@@ -1694,8 +1699,8 @@
         return { labels, physicsCounts, pinnCounts };
       }
 
-      function renderAtmosphereField(altitudes, density, wind) {
-        const canvas = document.getElementById("atmosField");
+      function renderAtmosphereField(altitudes, density, wind, canvasId = "chartDisplay") {
+        const canvas = document.getElementById(canvasId);
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
         const w = canvas.width = canvas.clientWidth;
@@ -1747,6 +1752,9 @@
       }
 
       document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".chart-toggle").forEach((btn) => {
+          btn.addEventListener("click", () => setActiveChart(btn.dataset.chart));
+        });
         loadPreset("windy");
         runInference();
       });
