@@ -902,24 +902,21 @@
         </div>
         <span class="tagline-chip">
           <span class="tagline-dot"></span>
-          Model rockets as atmospheric sensors
+          Flight telemetry → atmosphere model
         </span>
       </header>
 
       <section class="hero">
         <div class="hero-main">
-          <div class="hero-kicker">Project · Physics‑Informed AI for Rocket Flight</div>
+          <div class="hero-kicker">Product Build · Physics‑Informed AI for Rocket Flight</div>
           <h1 class="hero-title">
-            Physics‑informed AI for
-            <span class="highlight">atmospheric inference</span> and smarter rocket decisions.
+            Physics‑informed AI for <span class="highlight">atmospheric inference</span> and flight
+            control.
           </h1>
           <p class="hero-body">
-            This project turns
-            <strong>model rocket flights into atmospheric experiments</strong>. A
-            physics‑informed neural network (PINN) uses
-            <strong>telemetry + Newton’s laws</strong> to reconstruct vertical profiles of wind and
-            density, closing the gap between simplified simulations and reality and
-            <strong>shrinking apogee prediction error</strong>.
+            Product view: ingest flight telemetry + rocket parameters, solve a PINN constrained by
+            Newton’s laws, and output altitude‑dependent wind, density, and corrected apogee. Built
+            for repeatable launch ops, not slides.
           </p>
 
           <div class="hero-actions">
@@ -927,20 +924,14 @@
               <span class="btn-icon">▲</span>
               Run Atmospheric Inference Demo
             </button>
-            <button class="btn-secondary" onclick="scrollToSummary()">
-              <span class="btn-icon">?</span>
-              View Project Summary
-            </button>
           </div>
 
-          <div class="hero-pills">
-            <div class="pill"><strong>Input</strong>: Rocket telemetry + parameters</div>
-            <div class="pill">
-              <strong>Engine</strong>: Physics‑Informed Neural Network (PINN)
+            <div class="hero-pills">
+              <div class="pill"><strong>Input</strong>: Telemetry + rocket params</div>
+              <div class="pill"><strong>Engine</strong>: Physics‑Informed Neural Network</div>
+              <div class="pill"><strong>Output</strong>: Inferred atmosphere + apogee correction</div>
             </div>
-            <div class="pill"><strong>Output</strong>: Inferred atmosphere + better predictions</div>
           </div>
-        </div>
 
         <aside class="hero-panel">
           <div class="hero-panel-inner">
@@ -977,8 +968,8 @@
 
             <div class="hero-strip">
               <div class="hero-strip-text">
-                The network adjusts drag and effective wind with altitude until
-                <strong>telemetry and equations of motion agree</strong>.
+                Solver enforces F = m·a and drag; adjusts wind and density per altitude until
+                <strong>telemetry matches the equations of motion</strong>.
               </div>
               <div class="hero-strip-pills">
                 <span class="chip">Telemetry‑constrained</span>
@@ -989,113 +980,20 @@
         </aside>
       </section>
 
-      <section id="summary" style="margin-bottom: 26px">
-        <div class="content-grid">
-          <article class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Executive Overview</div>
-                <div class="card-title-main">What this project is about</div>
-              </div>
-              <span class="badge-soft">Pitch‑ready summary</span>
-            </div>
-            <div class="card-body">
-              <p>
-                Traditional rocket simulations assume a “nice” atmosphere and then push a design
-                through it. In reality, <strong>wind shear and density gradients</strong> change
-                with altitude and are rarely measured directly, so predictions drift from what
-                rockets actually do.
-              </p>
-              <p>
-                This project uses <strong>physics‑informed neural networks</strong> to work
-                backwards from <strong>flight data</strong>—altitude, acceleration, attitude, and
-                motor data—to <strong>reconstruct the atmosphere itself</strong>. Instead of
-                treating the atmosphere as a fixed input, it becomes an
-                <strong>unknown state inferred by the model</strong>. The result is tighter apogee
-                predictions and more informed design and launch decisions under real‑world
-                uncertainty.
-              </p>
-              <div class="pill-row">
-                <span class="pill-soft pill-keyword">Model rockets as atmospheric probes</span>
-                <span class="pill-soft">Governing laws: Newton + drag + stability</span>
-                <span class="pill-soft">Output: altitude‑dependent wind &amp; density</span>
-              </div>
-            </div>
-          </article>
-
-          <aside class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Talk Track</div>
-                <div class="card-title-main">How to present it</div>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="section-label">In 4 beats</div>
-              <ol class="bullets" style="margin-bottom: 10px">
-                <li>
-                  <strong>Problem</strong> – Simulators assume simple atmospheres; real flights see
-                  messy winds and density, so predictions are off.
-                </li>
-                <li>
-                  <strong>Idea</strong> – Treat each rocket flight as an
-                  <em>atmospheric experiment</em> and use a physics‑informed neural network to
-                  infer what the atmosphere had to be.
-                </li>
-                <li>
-                  <strong>Method</strong> – Feed in telemetry and rocket parameters, enforce
-                  Newton’s laws and drag physics inside the loss function, and solve for
-                  altitude‑dependent wind/density that make the trajectory consistent.
-                </li>
-                <li>
-                  <strong>Result</strong> – Reconstructed atmospheric profiles and
-                  <strong>smaller apogee prediction error</strong> than physics‑only baselines.
-                </li>
-              </ol>
-              <div class="section-label">Slide suggestions</div>
-              <div class="two-column-bullets">
-                <ul class="bullets">
-                  <li><strong>Slide 1</strong> – Title + one‑sentence problem.</li>
-                  <li>
-                    <strong>Slide 2</strong> – “Forward simulation” vs “inverse inference” diagram.
-                  </li>
-                  <li>
-                    <strong>Slide 3</strong> – PINN diagram: inputs, physics constraints, outputs.
-                  </li>
-                </ul>
-                <ul class="bullets">
-                  <li>
-                    <strong>Slide 4</strong> – Plot: predicted vs actual apogee, error bars.
-                  </li>
-                  <li>
-                    <strong>Slide 5</strong> – Demo this web UI as “AtmosPINN Lab” for model
-                    rockets.
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </aside>
-        </div>
-      </section>
-
       <section id="demo">
         <article class="card">
           <div class="card-header">
             <div>
               <div class="card-title">Interactive Demo</div>
-              <div class="card-title-main">
-                Explore inferred atmosphere from model rocket flights
-              </div>
+              <div class="card-title-main">Operational PINN inference</div>
             </div>
-            <span class="badge-soft">Demo this live on Saturday</span>
+            <span class="badge-soft">Engineering panel</span>
           </div>
 
           <div class="card-body">
             <p style="margin-bottom: 10px">
-              Use this panel as your “product”:
-              <strong>enter rocket and flight data</strong>, and the interface generates a
-              <strong>mocked atmospheric profile and apogee prediction comparison</strong> that
-              behaves like the real PINN would.
+              Enter flight data, run the PINN, and review six decisive charts plus an atmosphere
+              field model. Minimal storytelling, maximum signal.
             </p>
 
             <div class="demo-layout">
@@ -1293,6 +1191,14 @@
                     <canvas id="chartTrajectory"></canvas>
                   </div>
                 </div>
+
+                <div class="chart-card" style="margin-top: 14px">
+                  <div class="chart-card-header">
+                    <div class="chart-card-title">Atmospheric inference field</div>
+                    <span class="chart-tag">Density + cross‑wind profile</span>
+                  </div>
+                  <canvas id="atmosField" style="height: 200px"></canvas>
+                </div>
               </div>
             </div>
           </div>
@@ -1301,7 +1207,7 @@
 
       <footer>
         <span>AtmosPINN Lab · Physics‑Informed AI for Atmospheric Inference</span>
-        <span>Designed for live demo: plug in real flights as you collect them.</span>
+        <span>Product build: load flight logs, get atmosphere + apogee deltas.</span>
       </footer>
     </div>
 
@@ -1310,11 +1216,6 @@
 
       function scrollToDemo() {
         const el = document.getElementById("demo");
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-
-      function scrollToSummary() {
-        const el = document.getElementById("summary");
         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       }
 
@@ -1701,6 +1602,8 @@
             },
           },
         });
+
+        renderAtmosphereField(altitudes, density, wind);
       }
 
       function basePlugins(showLegend = true) {
@@ -1789,6 +1692,58 @@
         });
 
         return { labels, physicsCounts, pinnCounts };
+      }
+
+      function renderAtmosphereField(altitudes, density, wind) {
+        const canvas = document.getElementById("atmosField");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const w = canvas.width = canvas.clientWidth;
+        const h = canvas.height = canvas.clientHeight;
+
+        ctx.clearRect(0, 0, w, h);
+        const maxRho = Math.max(...density);
+        const maxWind = Math.max(...wind);
+
+        for (let i = 0; i < altitudes.length; i++) {
+          const y = h - (i / (altitudes.length - 1)) * h;
+          const rhoNorm = density[i] / maxRho;
+          const windNorm = wind[i] / (maxWind || 1);
+
+          const barHeight = h / altitudes.length + 2;
+          const grad = ctx.createLinearGradient(0, y, w, y);
+          grad.addColorStop(0, `rgba(34, 211, 238, ${0.15 + rhoNorm * 0.5})`);
+          grad.addColorStop(1, `rgba(14, 165, 233, ${0.05 + rhoNorm * 0.4})`);
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, y - barHeight / 2, w, barHeight);
+
+          const arrowLen = 20 + windNorm * 60;
+          ctx.strokeStyle = "rgba(168, 85, 247, 0.9)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(12, y);
+          ctx.lineTo(12 + arrowLen, y);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(12 + arrowLen, y);
+          ctx.lineTo(12 + arrowLen - 6, y - 4);
+          ctx.lineTo(12 + arrowLen - 6, y + 4);
+          ctx.closePath();
+          ctx.fillStyle = "rgba(168, 85, 247, 0.9)";
+          ctx.fill();
+        }
+
+        // Overlay particles to hint turbulence
+        const particles = 30;
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        for (let i = 0; i < particles; i++) {
+          const px = Math.random() * w;
+          const py = Math.random() * h;
+          const size = 1 + Math.random() * 2;
+          ctx.beginPath();
+          ctx.arc(px, py, size, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
 
       document.addEventListener("DOMContentLoaded", function () {
