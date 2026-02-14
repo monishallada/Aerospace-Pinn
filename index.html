@@ -15,6 +15,7 @@
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/three@0.161.0/build/three.min.js"></script>
     <style>
       :root {
         --bg: #05080f;
@@ -820,6 +821,30 @@
         max-height: 75vh;
       }
 
+      .holo-card {
+        margin: 14px 0 10px;
+        padding: 12px;
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: #0c1224;
+        box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4);
+      }
+
+      .holo-viewport {
+        width: 100%;
+        height: 320px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: var(--radius-md);
+        background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), #05080f 60%);
+        overflow: hidden;
+      }
+
+      .holo-viewport canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
       @media (max-width: 720px) {
         .chart-display {
           width: 100%;
@@ -1115,14 +1140,30 @@
               <div class="chart-side">
                 <div class="chart-heading">
                   <div>
-                    <div class="chart-title">2 · Most important 6 graphs</div>
+                    <div class="chart-title">2 · Visuals: hologram + 6 graphs</div>
                     <div class="subcaption">
-                      Select a view; chart renders in a focused panel (70% viewport width).
+                      Holographic rocket sim plus focused chart viewport.
                     </div>
                   </div>
                   <div class="chart-tags">
                     <span class="chart-tag">Physics baseline</span>
                     <span class="chart-tag">PINN correction</span>
+                  </div>
+                </div>
+
+                <div class="holo-card">
+                  <div class="chart-heading" style="margin-bottom: 6px">
+                    <div>
+                      <div class="chart-title">Holographic flight preview</div>
+                      <div class="subcaption">3D rocket, driven by wind + apogee stats.</div>
+                    </div>
+                    <div class="chart-tags">
+                      <span class="chart-tag">3D</span>
+                      <span class="chart-tag">WebGL</span>
+                    </div>
+                  </div>
+                  <div class="holo-viewport">
+                    <canvas id="holoCanvas"></canvas>
                   </div>
                 </div>
 
@@ -1173,6 +1214,7 @@
       let charts = {};
       let chartConfigs = {};
       let currentChartId = "physics";
+      let holoRenderer, holoScene, holoCamera, holoRocket, holoClock;
 
       function scrollToDemo() {
         const el = document.getElementById("demo");
@@ -1329,6 +1371,7 @@
           density,
           wind,
         });
+        updateHologram(Math.max(...wind), pinnApogee);
 
         setStatus("Inference complete. Explain how the PINN uses physics + data to learn this.");
       }
@@ -1376,6 +1419,126 @@
         if (charts[id]) charts[id].destroy();
         if (!config) return;
         charts[id] = new Chart(el, config);
+      }
+
+      function initHologram() {
+        const canvas = document.getElementById("holoCanvas");
+        if (!canvas || !window.THREE) return;
+
+        holoRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+        holoRenderer.setPixelRatio(window.devicePixelRatio);
+        holoRenderer.setSize(canvas.clientWidth, canvas.clientHeight, false);
+        holoRenderer.setClearColor(0x05080f, 1);
+
+        holoScene = new THREE.Scene();
+        holoScene.fog = new THREE.Fog(0x05080f, 6, 18);
+
+        holoCamera = new THREE.PerspectiveCamera(
+          35,
+          canvas.clientWidth / canvas.clientHeight,
+          0.1,
+          50
+        );
+        holoCamera.position.set(3.5, 2.2, 6);
+
+        const ambient = new THREE.AmbientLight(0x2ec4ff, 0.4);
+        holoScene.add(ambient);
+        const key = new THREE.PointLight(0xffffff, 1.1, 18);
+        key.position.set(4, 6, 4);
+        holoScene.add(key);
+        const rim = new THREE.PointLight(0x7c3aed, 0.6, 14);
+        rim.position.set(-5, 2, -3);
+        holoScene.add(rim);
+
+        const grid = new THREE.GridHelper(20, 20, 0x1e293b, 0x111827);
+        grid.position.y = -0.8;
+        holoScene.add(grid);
+
+        const rocket = new THREE.Group();
+        const bodyMat = new THREE.MeshStandardMaterial({
+          color: 0x0ea5e9,
+          emissive: 0x0ea5e9,
+          emissiveIntensity: 0.4,
+          metalness: 0.25,
+          roughness: 0.35,
+        });
+        const noseMat = new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          emissive: 0xffffff,
+          emissiveIntensity: 0.25,
+          metalness: 0.1,
+          roughness: 0.2,
+        });
+
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.24, 1.6, 28, 1, false), bodyMat);
+        body.position.y = 0.8;
+        rocket.add(body);
+
+        const nose = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.45, 28), noseMat);
+        nose.position.y = 1.83;
+        rocket.add(nose);
+
+        const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.24, 0.25, 20), bodyMat);
+        tail.position.y = 0.05;
+        rocket.add(tail);
+
+        // fins
+        const finGeom = new THREE.BoxGeometry(0.02, 0.18, 0.28);
+        for (let i = 0; i < 4; i++) {
+          const fin = new THREE.Mesh(finGeom, noseMat);
+          const angle = (i * Math.PI) / 2;
+          fin.position.set(Math.cos(angle) * 0.2, 0.1, Math.sin(angle) * 0.2);
+          fin.rotation.y = angle;
+          rocket.add(fin);
+        }
+
+        rocket.position.y = 0.2;
+        holoScene.add(rocket);
+        holoRocket = rocket;
+
+        const glowGeo = new THREE.ConeGeometry(0.12, 0.8, 20, 1, true);
+        const glowMat = new THREE.MeshBasicMaterial({
+          color: 0x22d3ee,
+          transparent: true,
+          opacity: 0.35,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        });
+        const glow = new THREE.Mesh(glowGeo, glowMat);
+        glow.position.y = -0.3;
+        glow.rotation.x = Math.PI;
+        rocket.add(glow);
+
+        holoClock = new THREE.Clock();
+
+        function animate() {
+          requestAnimationFrame(animate);
+          if (holoRocket) {
+            const t = holoClock.getElapsedTime();
+            holoRocket.rotation.y += 0.01;
+            holoRocket.position.y = 0.2 + Math.sin(t * 1.6) * 0.06;
+          }
+          holoRenderer.render(holoScene, holoCamera);
+        }
+        animate();
+
+        window.addEventListener("resize", () => {
+          if (!holoRenderer || !holoCamera || !canvas) return;
+          const w = canvas.clientWidth;
+          const h = canvas.clientHeight;
+          holoCamera.aspect = w / h;
+          holoCamera.updateProjectionMatrix();
+          holoRenderer.setSize(w, h, false);
+        });
+      }
+
+      function updateHologram(peakWind, apogee) {
+        if (!holoRocket) return;
+        const tilt = Math.min(peakWind / 25, 0.35);
+        holoRocket.rotation.z = tilt * Math.sin(Date.now() * 0.0015);
+        holoRocket.rotation.x = tilt * 0.6;
+        const scale = 1 + Math.min(apogee / 800, 0.6);
+        holoRocket.scale.set(scale, scale, scale);
       }
 
       function setActiveChart(chartId) {
@@ -1835,6 +1998,7 @@
         document.querySelectorAll(".chart-toggle").forEach((btn) => {
           btn.addEventListener("click", () => setActiveChart(btn.dataset.chart));
         });
+        initHologram();
         loadPreset("windy");
         runInference();
       });
